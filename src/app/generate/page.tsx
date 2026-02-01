@@ -12,6 +12,9 @@ import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { generateRecipe, extractRecipeFromUrl, extractRecipeFromImage } from '@/lib/xai';
 import type { ExtractedRecipe, RecipeInputMode } from '@/types';
+import type { Database } from '@/types/database';
+
+type RecipeInsert = Database['public']['Tables']['recipes']['Insert'];
 
 const CUISINES = ['Italian', 'Mexican', 'Chinese', 'Indian', 'American', 'Mediterranean', 'Japanese', 'Thai'];
 const RESTRICTIONS = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Low-Carb'];
@@ -108,7 +111,7 @@ export default function GeneratePage() {
     if (!preview || !user) return;
     setLoading(true);
     try {
-      const { error } = await supabase.from('recipes').insert({
+      const recipeData: RecipeInsert = {
         user_id: user.id,
         name: preview.name,
         description: preview.description,
@@ -118,15 +121,17 @@ export default function GeneratePage() {
         servings: preview.servings,
         difficulty: preview.difficulty,
         dietary_tags: preview.dietaryTags,
-        ingredients: preview.ingredients,
+        ingredients: preview.ingredients as unknown as Database['public']['Tables']['recipes']['Row']['ingredients'],
         instructions: preview.instructions,
         tips: preview.tips,
-        nutrition: preview.nutrition,
+        nutrition: preview.nutrition as unknown as Database['public']['Tables']['recipes']['Row']['nutrition'],
         image_url: preview.imageUrl,
         source_url: preview.sourceUrl,
         is_ai_generated: true,
+        is_favorite: false,
         category: preview.cuisine || 'Other',
-      });
+      };
+      const { error } = await supabase.from('recipes').insert(recipeData);
 
       if (error) throw error;
       router.push('/recipes');
