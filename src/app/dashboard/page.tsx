@@ -14,6 +14,7 @@ import type { Recipe } from '@/types';
 import type { Database } from '@/types/database';
 
 type RecipeRow = Database['public']['Tables']['recipes']['Row'];
+type UserSettingsRow = Database['public']['Tables']['user_settings']['Row'];
 
 const navItems = [
   { href: '/generate', icon: Sparkles, label: 'AI Generate', color: 'text-neon-pink' },
@@ -80,7 +81,7 @@ export default function DashboardPage() {
     const { data: settings } = await supabase
       .from('user_settings')
       .select('user_name')
-      .single();
+      .single() as { data: Pick<UserSettingsRow, 'user_name'> | null };
 
     if (settings?.user_name) {
       setUserName(settings.user_name);
