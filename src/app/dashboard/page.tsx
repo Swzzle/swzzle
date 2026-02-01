@@ -11,6 +11,9 @@ import { Card, Button, Badge } from '@/components/ui';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import type { Recipe } from '@/types';
+import type { Database } from '@/types/database';
+
+type RecipeRow = Database['public']['Tables']['recipes']['Row'];
 
 const navItems = [
   { href: '/generate', icon: Sparkles, label: 'AI Generate', color: 'text-neon-pink' },
@@ -45,7 +48,7 @@ export default function DashboardPage() {
       .from('recipes')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(4);
+      .limit(4) as { data: RecipeRow[] | null };
 
     if (recipesData) {
       setRecipes(recipesData.map(r => ({
