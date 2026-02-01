@@ -6,6 +6,9 @@ import { ArrowLeft, Settings, User, Palette, Info, LogOut, Check } from 'lucide-
 import { Button, Card, Input } from '@/components/ui';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/types/database';
+
+type UserSettingsRow = Database['public']['Tables']['user_settings']['Row'];
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
@@ -18,7 +21,10 @@ export default function SettingsPage() {
   }, []);
 
   const loadSettings = async () => {
-    const { data } = await supabase.from('user_settings').select('user_name').single();
+    const { data } = await supabase
+      .from('user_settings')
+      .select('user_name')
+      .single() as { data: Pick<UserSettingsRow, 'user_name'> | null };
     if (data?.user_name) {
       setUserName(data.user_name);
     }
@@ -31,7 +37,8 @@ export default function SettingsPage() {
       await supabase.from('user_settings').upsert({
         user_id: user.id,
         user_name: userName,
-      });
+        theme: 'dark',
+      } as Database['public']['Tables']['user_settings']['Insert']);
       setMessage('Settings saved!');
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {

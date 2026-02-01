@@ -7,6 +7,9 @@ import { Card, Button, Badge, Input } from '@/components/ui';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import type { Recipe } from '@/types';
+import type { Database } from '@/types/database';
+
+type RecipeRow = Database['public']['Tables']['recipes']['Row'];
 
 export default function RecipesPage() {
   const { user } = useAuth();
@@ -22,7 +25,7 @@ export default function RecipesPage() {
     const { data } = await supabase
       .from('recipes')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false }) as { data: RecipeRow[] | null };
 
     if (data) {
       setRecipes(data.map(r => ({
@@ -53,7 +56,7 @@ export default function RecipesPage() {
   };
 
   const toggleFavorite = async (id: string, current: boolean) => {
-    await supabase.from('recipes').update({ is_favorite: !current }).eq('id', id);
+    await supabase.from('recipes').update({ is_favorite: !current } as Database['public']['Tables']['recipes']['Update']).eq('id', id);
     setRecipes(prev => prev.map(r => r.id === id ? { ...r, isFavorite: !current } : r));
   };
 
